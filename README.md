@@ -8,11 +8,14 @@ This tutorial presents latest research in policy gradient methods for modle-free
 1. Advantage Actor Critic (A2C)
  - [A3C Paper](https://arxiv.org/pdf/1602.01783.pdf) 
  - [OpenAI blog](https://blog.openai.com/baselines-acktr-a2c/#a2canda3c)
-  2.  Proximal Policy Optimization Algorithms 
+ 2.  Continuous control with deep reinforcement learning
+  - [DDPG Paper](https://arxiv.org/abs/1509.02971)
+  3.  Proximal Policy Optimization Algorithms 
   - [PPO Paper](https://arxiv.org/abs/1707.06347)
   - [OpenAI blog](https://blog.openai.com/openai-baselines-ppo/)
-  3.  Continuous control with deep reinforcement learning
-  - [DDPG Paper](https://arxiv.org/abs/1509.02971)
+  4.  Trust Region Policy Optimization
+  - [OpenAI Spinning Up](https://spinningup.openai.com/en/latest/algorithms/trpo.html)
+  - [TRPO Paper](https://arxiv.org/abs/1502.05477)
 
 If you wante a hang in PyTorch then refer [my tutorial](https://github.com/sprakasdash/PyTorch_Tutorials) to get started or the [official tutorials](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html).
 ## Best RL courses to refer:
