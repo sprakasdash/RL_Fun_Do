@@ -17,7 +17,7 @@ This tutorial presents latest research in policy gradient methods for modle-free
   - [OpenAI Spinning Up](https://spinningup.openai.com/en/latest/algorithms/trpo.html)
   - [TRPO Paper](https://arxiv.org/abs/1502.05477)
 
-If you wante a hang in PyTorch then refer [my tutorial](https://github.com/sprakasdash/PyTorch_Tutorials) to get started or the [official tutorials](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html).
+If you wante a hang in PyTorch then refer [my tutorials](https://github.com/sprakasdash/PyTorch_Tutorials) to get started or the [official tutorials](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html).
 ## Best RL courses to refer:
 - [Berkeley Deep RL Course (2019)](http://rail.eecs.berkeley.edu/deeprlcourse/)
 - [Deep RL Bootcamp](https://sites.google.com/view/deep-rl-bootcamp/lectures)
