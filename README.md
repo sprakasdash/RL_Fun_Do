@@ -8,18 +8,18 @@ This tutorial presents latest research in policy gradient methods for modle-free
 1. Advantage Actor Critic (A2C)
  - [A3C Paper](https://arxiv.org/pdf/1602.01783.pdf) 
  - [OpenAI blog](https://blog.openai.com/baselines-acktr-a2c/#a2canda3c)
- 2.  Continuous control with deep reinforcement learning
-  - [DDPG Paper](https://arxiv.org/abs/1509.02971)
-  3.  Proximal Policy Optimization Algorithms 
-  - [PPO Paper](https://arxiv.org/abs/1707.06347)
-  - [OpenAI blog](https://blog.openai.com/openai-baselines-ppo/)
-  4.  Trust Region Policy Optimization
-  - [OpenAI Spinning Up](https://spinningup.openai.com/en/latest/algorithms/trpo.html)
-  - [TRPO Paper](https://arxiv.org/abs/1502.05477)
-  4.  Soft Actor Critic Algorithm
-  - [BAIR UC Berkeley Blog](https://bair.berkeley.edu/blog/2018/12/14/sac/)
-  - [SAC 2018 Paper](https://arxiv.org/abs/1801.01290)
-  - [SAC 2019 Paper](https://arxiv.org/abs/1812.05905v2)
+2.  Continuous control with deep reinforcement learning
+ - [DDPG Paper](https://arxiv.org/abs/1509.02971)
+3.  Proximal Policy Optimization Algorithms 
+ - [PPO Paper](https://arxiv.org/abs/1707.06347)
+ - [OpenAI blog](https://blog.openai.com/openai-baselines-ppo/)
+4.  Trust Region Policy Optimization
+ - [OpenAI Spinning Up](https://spinningup.openai.com/en/latest/algorithms/trpo.html)
+ - [TRPO Paper](https://arxiv.org/abs/1502.05477)
+5.  Soft Actor Critic Algorithm
+ - [BAIR UC Berkeley Blog](https://bair.berkeley.edu/blog/2018/12/14/sac/)
+ - [SAC 2018 Paper](https://arxiv.org/abs/1801.01290)
+ - [SAC 2019 Paper](https://arxiv.org/abs/1812.05905v2)
   
   
 If you want a hang in PyTorch then refer [my tutorials](https://github.com/sprakasdash/PyTorch_Tutorials) to get started or the [official tutorials](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html).
