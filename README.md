@@ -16,8 +16,14 @@ This tutorial presents latest research in policy gradient methods for modle-free
   4.  Trust Region Policy Optimization
   - [OpenAI Spinning Up](https://spinningup.openai.com/en/latest/algorithms/trpo.html)
   - [TRPO Paper](https://arxiv.org/abs/1502.05477)
+  4.  Soft Actor Critic Algorithm
+  - [BAIR UC Berkeley Blog](https://bair.berkeley.edu/blog/2018/12/14/sac/)
+  - [SAC 2018 Paper](https://arxiv.org/abs/1801.01290)
+  - [SAC 2019 Paper](https://arxiv.org/abs/1812.05905v2)
+  
+  
+If you want a hang in PyTorch then refer [my tutorials](https://github.com/sprakasdash/PyTorch_Tutorials) to get started or the [official tutorials](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html).
 
-If you wante a hang in PyTorch then refer [my tutorials](https://github.com/sprakasdash/PyTorch_Tutorials) to get started or the [official tutorials](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html).
 ## Best RL courses to refer:
 - [Berkeley Deep RL Course (2019)](http://rail.eecs.berkeley.edu/deeprlcourse/)
 - [Deep RL Bootcamp](https://sites.google.com/view/deep-rl-bootcamp/lectures)
