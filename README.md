@@ -21,6 +21,10 @@ This tutorial presents latest research in policy gradient methods for modle-free
   - [SAC 2018 Paper](https://arxiv.org/abs/1801.01290)
   - [SAC 2019 Paper](https://arxiv.org/abs/1812.05905v2)
   
+### I have also updated Soft Actor Critic with tensorboard feature to plot your learning curves.
+Here is one of the training sample:
+  
+![](SAC_HalfCheetah_2020-04-15 08-43-29.png)
   
 If you want a hang in PyTorch then refer [my tutorials](https://github.com/sprakasdash/PyTorch_Tutorials) to get started or the [official tutorials](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html).
 
