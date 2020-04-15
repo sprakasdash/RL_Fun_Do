@@ -22,7 +22,7 @@ This tutorial presents latest research in policy gradient methods for modle-free
   - [SAC 2019 Paper](https://arxiv.org/abs/1812.05905v2)
   
 ### I have also updated Soft Actor Critic with tensorboard feature to plot your learning curves.
-Here is one of the training sample:
+Here is one of the training sample for MuJoCo HalfCheetah:
   
 ![](/SAC_2018&2019/SAC_HalfCheetah_2020-04-15%2008-43-29.png)
   
