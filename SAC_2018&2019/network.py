@@ -1,6 +1,6 @@
 import math
 
-import torch as T
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal
@@ -35,7 +35,7 @@ class SoftQNetwork(nn.Module):
         self.linear3.bias.data.uniform_(-init_w, init_w)
         
     def forward(self, state, action):
-        x = T.cat([state, action], 1)
+        x = torch.cat([state, action], 1)
         x = F.relu(self.linear1(x))
         x = F.relu(self.linear2(x))
         x = self.linear3(x)
@@ -43,22 +43,26 @@ class SoftQNetwork(nn.Module):
         
         
 class PolicyNetwork(nn.Module):
-    def __init__(self, state_dim, action_dim, hidden_dim=256, init_w=3e-3, log_std_min=-20, log_std_max=2):
+    def __init__(self, num_inputs, num_actions, action_space, hidden_size=256,
+                 init_w=3e-3, log_std_min=-20, log_std_max=2):
         super(PolicyNetwork, self).__init__()
         
         self.log_std_min = log_std_min
         self.log_std_max = log_std_max
         
-        self.linear1 = nn.Linear(state_dim, hidden_dim)
-        self.linear2 = nn.Linear(hidden_dim, hidden_dim)
+        self.linear1 = nn.Linear(num_inputs, hidden_size)
+        self.linear2 = nn.Linear(hidden_size, hidden_size)
         
-        self.mean_linear = nn.Linear(hidden_dim, action_dim)
+        self.mean_linear = nn.Linear(hidden_size, num_actions)
         self.mean_linear.weight.data.uniform_(-init_w, init_w)
         self.mean_linear.bias.data.uniform_(-init_w, init_w)
         
-        self.log_std_linear = nn.Linear(hidden_dim, action_dim)
+        self.log_std_linear = nn.Linear(hidden_size, num_actions)
         self.log_std_linear.weight.data.uniform_(-init_w, init_w)
         self.log_std_linear.bias.data.uniform_(-init_w, init_w)
+        
+        self.action_scale = torch.FloatTensor((action_space.high - action_space.low) / 2.)
+        self.action_bias = torch.FloatTensor((action_space.high + action_space.low) / 2.)
     
     def forward(self, state):
         x = F.relu(self.linear1(state))
@@ -66,18 +70,24 @@ class PolicyNetwork(nn.Module):
         
         mean    = self.mean_linear(x)
         log_std = self.log_std_linear(x)
-        log_std = T.clamp(log_std, self.log_std_min, self.log_std_max)
+        log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
         
         return mean, log_std
     
-    def evaluate(self, state, epsilon=1e-6):
+    def sample(self, state, epsilon=1e-6):
         mean, log_std = self.forward(state)
         std = log_std.exp()
         
         normal = Normal(mean, std)
         z = normal.rsample()
-        action = T.tanh(z)
-        
-        log_prob = normal.log_prob(z) - T.log(1 - action.pow(2) + epsilon)
-        log_prob = log_prob.sum(-1, keepdim=True)
-        return action, log_prob, z, mean, log_std  
+        z1 = torch.tanh(z)
+        action = z1 * self.action_scale + self.action_bias
+        log_prob = normal.log_prob(z) - torch.log(self.action_scale * (1 - z1.pow(2)) + epsilon)
+        log_prob = log_prob.sum(1, keepdim=True)
+        mean = torch.tanh(mean) * self.action_scale + self.action_bias
+        return action, log_prob, mean
+    
+    def to(self, device):
+        self.action_scale = self.action_scale.to(device)
+        self.action_bias = self.action_bias.to(device)
+        return super(PolicyNetwork, self).to(device)
