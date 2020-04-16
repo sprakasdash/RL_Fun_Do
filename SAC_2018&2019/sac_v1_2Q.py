@@ -1,6 +1,6 @@
 import numpy as np
 
-import torch as T
+import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
@@ -12,7 +12,7 @@ from network import ValueNetwork, PolicyNetwork, SoftQNetwork
 class SAC2018Agent(object):
     def __init__(self, env, buffer_size,
                  gamma, soft_tau, v_lr, q_lr, p_lr):
-        self.device = T.device("cuda" if T.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.env = env
         self.replay_buffer = ReplayBuffer(buffer_size)
         self.state_dim = env.observation_space.shape[0]
@@ -25,7 +25,7 @@ class SAC2018Agent(object):
         
         self.soft_q1_net = SoftQNetwork(self.state_dim, self.action_dim).to(self.device)
         self.soft_q2_net = SoftQNetwork(self.state_dim, self.action_dim).to(self.device)
-        self.policy_net = PolicyNetwork(self.state_dim, self.action_dim).to(self.device)
+        self.policy_net = PolicyNetwork(self.state_dim, self.action_dim, self.env.action_space).to(self.device)
         
         for target_param, param in zip(self.target_value_net.parameters(), self.value_net.parameters()):
             target_param.data.copy_(param.data)
@@ -36,35 +36,29 @@ class SAC2018Agent(object):
         self.policy_optimizer = optim.Adam(self.policy_net.parameters(), lr=p_lr)
         
         self.replay_buffer = ReplayBuffer(buffer_size)
-        
-    def get_action(self, state):
-        state = T.FloatTensor(state).unsqueeze(0).to(self.device)
-        mean, log_std = self.policy_net.forward(state)
-        std = log_std.exp()
+
+    def get_action(self, state, evaluate=False):
+        state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+        if evaluate is False:
+            action, _, _ = self.policy_net.sample(state)
+        else:
+            _, _, action = self.policy_net.sample(state)
+        return action.detach().cpu().numpy()[0]
     
-        normal = Normal(mean, std)
-        z      = normal.rsample()
-        action = T.tanh(z)
-        action = action.cpu().detach().numpy()[0]
-        return action
-    
-    def soft_q_update(self, batch_size, 
-                       mean_lambda=1e-3,
-                       std_lambda=1e-3,
-                       z_lambda=0.0):
+    def soft_q_update(self, batch_size):
         state, action, reward, next_state, done = self.replay_buffer.sample(batch_size)
     
-        state      = T.FloatTensor(state).to(self.device)
-        next_state = T.FloatTensor(next_state).to(self.device)
-        action     = T.FloatTensor(action).to(self.device)
-        reward     = T.FloatTensor(reward).unsqueeze(1).to(self.device)
-        done       = T.FloatTensor(np.float32(done)).unsqueeze(1).to(self.device)
+        state      = torch.FloatTensor(state).to(self.device)
+        next_state = torch.FloatTensor(next_state).to(self.device)
+        action     = torch.FloatTensor(action).to(self.device)
+        reward     = torch.FloatTensor(reward).unsqueeze(1).to(self.device)
+        done       = torch.FloatTensor(np.float32(done)).unsqueeze(1).to(self.device)
 
         expected_q1_value = self.soft_q1_net(state, action)
         expected_q2_value = self.soft_q2_net(state, action)
 
         expected_value   = self.value_net(state)
-        new_action, log_prob, z, mean, log_std = self.policy_net.evaluate(state)
+        new_action, log_prob, _ = self.policy_net.sample(state)
 
 
         target_value = self.target_value_net(next_state)
@@ -72,16 +66,12 @@ class SAC2018Agent(object):
         q1_value_loss = F.mse_loss(expected_q1_value, next_q_value.detach())
         q2_value_loss = F.mse_loss(expected_q2_value, next_q_value.detach())
 
-        expected_new_q_value = T.min(self.soft_q1_net(state, new_action), self.soft_q2_net(state, new_action))
+        expected_new_q_value = torch.min(self.soft_q1_net(state, new_action), self.soft_q2_net(state, new_action))
         next_value = expected_new_q_value - log_prob
         value_loss = F.mse_loss(expected_value, next_value.detach())
         
         log_prob_target = expected_new_q_value - expected_value
         policy_loss = (log_prob * (log_prob - log_prob_target).detach()).mean()
-        mean_loss = mean_lambda * mean.pow(2).mean()
-        std_loss  = std_lambda  * log_std.pow(2).mean()
-        z_loss    = z_lambda    * z.pow(2).sum(1).mean()
-        policy_loss += mean_loss + std_loss + z_loss
         
         self.soft_q1_optimizer.zero_grad()
         q1_value_loss.backward()
@@ -103,3 +93,5 @@ class SAC2018Agent(object):
             target_param.data.copy_(
                 target_param.data * (1.0 - self.soft_tau) + param.data * self.soft_tau
             )
+    
+        return q1_value_loss.item(), q2_value_loss.item(), value_loss.item(), policy_loss.item()
