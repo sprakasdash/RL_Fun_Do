@@ -3,18 +3,30 @@ import matplotlib.pyplot as plt
 import gym
 import numpy
 
-import torch as T
+import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.distributions import Normal
 
+import itertools
+from datetime import datetime
+from tensorboardX import SummaryWriter
+
 from utils import *
 from sac_v1_2Q import *
 
-env = NormalizedActions(gym.make("Pendulum-v0"))
+# ---IF YOU ARE USING pybullet ENVIRONMENT------
+# pybullet.connect(pybullet.DIRECT)
+# env = gym.make("AntBulletEnv-v0")
+# ----------------------------------------------
+env = gym.make("Ant-v2")
 buffer_size = 1_000_000
+max_time_steps = 1_000_001 #which we generally use in research papaers
+start_steps = 10000
+batch_size  = 256
 gamma = 0.99
+alpha = 0.2
 soft_tau = 1e-2
 v_lr = 3e-4
 q_lr = 3e-4
@@ -22,40 +34,65 @@ p_lr = 3e-4
 
 agent = SAC2018Agent(env, buffer_size, gamma, soft_tau, v_lr, q_lr, p_lr)
 
-max_frames  = 40_000
-max_steps   = 500
-frame_idx   = 0
-rewards     = []
-batch_size  = 256
+total_numsteps = 0
 
-def plot(frame_idx, rewards):
-    clear_output(True)
-    plt.figure(figsize=(20,5))
-    plt.subplot(131)
-    plt.title('frame %s. reward: %s' % (frame_idx, rewards[-1]))
-    plt.plot(rewards)
-    plt.show()
+writer = SummaryWriter(logdir='runs/{}_SAC_{}'.format(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), env.unwrapped.spec.id))
 
-while frame_idx < max_frames:
-    state = env.reset()
+# STORING IN THE /runs directory in you current pwd...
+# Then you could call:
+# tensorboard --logdir /runs to view the results
+
+for i_episode in itertools.count(1):
     episode_reward = 0
+    episode_steps = 0
+    done = False
+    state = env.reset()
     
-    for step in range(max_steps):
-        action = agent.get_action(state)
-        next_state, reward, done, _ = env.step(action)
+    while not done:
+        if start_steps > total_numsteps:
+            action = env.action_space.sample()
+        else:
+            action = agent.get_action(state)
         
-        agent.replay_buffer.push(state, action, reward, next_state, done)
         if len(agent.replay_buffer) > batch_size:
-            agent.soft_q_update(batch_size)
+            soft_q1_loss, soft_q2_loss, value_loss, policy_loss = agent.soft_q_update(batch_size)
+            writer.add_scalar('loss/soft_q1', soft_q1_loss)
+            writer.add_scalar('loss/soft_q2', soft_q2_loss)
+            writer.add_scalar('loss/value', value_loss)
+            writer.add_scalar('loss/policy', policy_loss)
         
-        state = next_state
+        next_state, reward, done, _ = env.step(action)
+        episode_steps += 1
+        total_numsteps += 1
         episode_reward += reward
-        frame_idx += 1
+        if episode_steps == env._max_episode_steps:
+            done = 1
+        else:
+            float(not done)
+        agent.replay_buffer.push(state, action, reward, next_state, done)
+        state = next_state
+    
+    if total_numsteps > max_time_steps:
+        break
+    writer.add_scalar('reward/train', episode_reward, i_episode)
+    print("Episode: {}, Total Steps: {}, Episode Steps: {}, Reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2)))
+    
+    if i_episode % 10 == 0: #Taking average reward of 10 episodes
+        avg_reward = 0.
+        episodes = 10
+        for _ in range(episodes):
+            state = env.reset()
+            episode_reward = 0
+            done = False
+            
+            while not done:
+                action = agent.get_action(state, evaluate=True)
+                next_state, reward, done, _ = env.step(action)
+                episode_reward += reward
+                state = next_state
+            avg_reward += episode_reward
+        avg_reward /= episodes
         
-        if frame_idx % 1000 == 0:
-            plot(frame_idx, rewards)
-        
-        if done:
-            break
-        
-    rewards.append(episode_reward)
+        writer.add_scalar('avg_reward/test', avg_reward, i_episode)
+        print("Test Episode: {}, Average Reward: {}".format(episodes, round(avg_reward, 2)))
+env.close()
