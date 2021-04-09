@@ -1,4 +1,4 @@
-# RL_Fun_Do
+# RL.Fun.Do
 A repository for easy understanding of codes in Deep Reinforcement Learning
 
 <img width="160px" height="22px" href="https://github.com/pytorch/pytorch" src="https://pp.userapi.com/c847120/v847120960/82b4/xGBK9pXAkw8.jpg">
